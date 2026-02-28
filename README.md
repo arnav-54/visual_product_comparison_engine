@@ -72,10 +72,21 @@ Transform product images into high-dimensional feature vectors using a pre-train
 ## 4. System Architecture
 
 ### High-Level Flow
-```
-User Upload → Image Preprocessing → MobileNet Inference → 
-Embedding Extraction → L2 Normalization → Cosine Similarity Computation → 
-Ranking Algorithm → Top-K Results → UI Rendering
+```mermaid
+flowchart LR
+    A[User Upload] --> B[Image Preprocessing]
+    B --> C[MobileNet Inference]
+    C --> D[Embedding Extraction]
+    D --> E[L2 Normalization]
+    E --> F[Cosine Similarity<br/>Computation]
+    F --> G[Ranking Algorithm]
+    G --> H[Top-K Results]
+    H --> I[UI Rendering]
+    
+    style A fill:#4a90e2,stroke:#2e5c8a,stroke-width:2px,color:#fff
+    style C fill:#f39c12,stroke:#d68910,stroke-width:2px,color:#fff
+    style F fill:#e74c3c,stroke:#c0392b,stroke-width:2px,color:#fff
+    style I fill:#27ae60,stroke:#1e8449,stroke-width:2px,color:#fff
 ```
 
 ### Architecture Description
@@ -100,36 +111,46 @@ The system operates entirely within the browser runtime with three core modules:
    - Cosine similarity computation: `similarity = dot(A,B) / (||A|| × ||B||)`
    - Top-K ranking algorithm
 
-### Architecture Diagram (Textual Representation)
-```
-┌─────────────────────────────────────────────────────────────┐
-│                      Browser Runtime                        │
-│                                                             │
-│  ┌──────────────────────────────────────────────────────┐   │
-│  │                 React UI Layer                       │   │
-│  │  • ImageUploader  • ResultsGrid  • SimilarityBadge   │   │
-│  └────────────────────┬─────────────────────────────────┘   │
-│                       │                                     │
-│  ┌────────────────────▼─────────────────────────────────┐   │
-│  │           Embedding Extractor Module                 │   │
-│  │  • TensorFlow.js Runtime (WebGL Backend)             │   │
-│  │  • MobileNet v2 (Pre-trained)                        │   │
-│  │  • Image Preprocessing Pipeline                      │   │
-│  └────────────────────┬─────────────────────────────────┘   │
-│                       │                                     │
-│  ┌────────────────────▼─────────────────────────────────┐   │
-│  │        Similarity Search Engine                      │   │
-│  │  • Local Catalog (catalog.json)                      │   │
-│  │  • Vector Normalization                              │   │
-│  │  • Cosine Similarity Algorithm                       │   │
-│  │  • Ranking & Filtering Logic                         │   │
-│  └──────────────────────────────────────────────────────┘   │
-│                                                             │
-│  ┌──────────────────────────────────────────────────────┐   │
-│  │           IndexedDB (Optional Cache)                 │   │
-│  │  • Model Weights  • Embeddings  • Catalog            │   │
-│  └──────────────────────────────────────────────────────┘   │
-└─────────────────────────────────────────────────────────────┘
+### Architecture Diagram
+```mermaid
+graph TB
+    subgraph Browser["Browser Runtime"]
+        subgraph UI["React UI Layer"]
+            A1[ImageUploader]
+            A2[ResultsGrid]
+            A3[SimilarityBadge]
+        end
+        
+        subgraph Embedding["Embedding Extractor Module"]
+            B1[TensorFlow.js Runtime<br/>WebGL Backend]
+            B2[MobileNet v2<br/>Pre-trained]
+            B3[Image Preprocessing<br/>Pipeline]
+        end
+        
+        subgraph Search["Similarity Search Engine"]
+            C1[Local Catalog<br/>catalog.json]
+            C2[Vector Normalization]
+            C3[Cosine Similarity<br/>Algorithm]
+            C4[Ranking & Filtering<br/>Logic]
+        end
+        
+        subgraph Cache["IndexedDB Optional Cache"]
+            D1[Model Weights]
+            D2[Embeddings]
+            D3[Catalog]
+        end
+    end
+    
+    UI --> Embedding
+    Embedding --> Search
+    Search -.-> Cache
+    Cache -.-> Embedding
+    
+    style Browser fill:#1a1a2e,stroke:#16213e,stroke-width:2px,color:#fff
+    style UI fill:#0f3460,stroke:#16213e,stroke-width:2px,color:#fff
+    style Embedding fill:#0f3460,stroke:#16213e,stroke-width:2px,color:#fff
+    style Search fill:#0f3460,stroke:#16213e,stroke-width:2px,color:#fff
+    style Cache fill:#0f3460,stroke:#16213e,stroke-width:2px,color:#fff
 ```
 
 **Why No Backend?**
@@ -169,21 +190,19 @@ The system operates entirely within the browser runtime with three core modules:
 4. **Optional Caching**: IndexedDB stores model weights and catalog for offline-first experience
 
 ### ER Diagram
+```mermaid
+erDiagram
+    PRODUCT {
+        string id PK "Primary Key"
+        string name
+        string category
+        string brand
+        string image "File path"
+        float32array embedding "1024 dimensions"
+    }
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                         PRODUCT                             │
-├─────────────────────────────────────────────────────────────┤
-│  PK  │ id           : String                                │
-│      │ name         : String                                │
-│      │ category     : String                                │
-│      │ brand        : String                                │
-│      │ image        : String (path)                         │
-│      │ embedding    : Float32Array[1024]                    │
-└─────────────────────────────────────────────────────────────┘
 
-                    No Relationships
-              (Single Entity, Flat Structure)
-```
+**Note**: Single entity with no relationships (flat structure)
 
 ### ER Diagram Description
 ```
@@ -421,11 +440,17 @@ const similarity = dotProduct; // Already normalized
 - Memory optimization using `tf.tidy()`
 
 **Integration Flow:**
-1. Load MobileNet v2 on app initialization
-2. Preprocess uploaded image to 224×224 tensor
-3. Extract activation from penultimate layer
-4. Normalize embedding vector
-5. Pass to similarity search engine
+```mermaid
+flowchart TD
+    A[Load MobileNet v2<br/>on app initialization] --> B[Preprocess uploaded image<br/>to 224×224 tensor]
+    B --> C[Extract activation from<br/>penultimate layer]
+    C --> D[Normalize embedding<br/>vector]
+    D --> E[Pass to similarity<br/>search engine]
+    
+    style A fill:#3498db,stroke:#2980b9,stroke-width:2px,color:#fff
+    style C fill:#e67e22,stroke:#d35400,stroke-width:2px,color:#fff
+    style E fill:#27ae60,stroke:#229954,stroke-width:2px,color:#fff
+```
 
 ---
 
@@ -449,60 +474,52 @@ const similarity = dotProduct; // Already normalized
 ## 11. End-to-End Workflow
 
 ### User Journey
-1. **Application Load**
-   - User navigates to web application
-   - TensorFlow.js runtime initializes
-   - MobileNet v2 model loads from CDN (cached after first load)
-   - Product catalog loads into memory
-
-2. **Image Upload**
-   - User drags and drops product image or clicks to upload
-   - Image preview displays with loading indicator
-   - Client-side validation (file type, size)
-
-3. **Embedding Extraction**
-   - Image preprocessed to 224×224 RGB tensor
-   - MobileNet v2 inference extracts 1024-dim feature vector
-   - Vector normalized using L2 norm
-   - Process completes in <500ms
-
-4. **Similarity Search**
-   - Query embedding compared against all catalog embeddings
-   - Cosine similarity computed for each product
-   - Results sorted by similarity score (descending)
-   - Top 10 products selected
-
-5. **Results Display**
-   - Product cards render in responsive grid
-   - Each card shows: image, name, category, similarity percentage
-   - Visual similarity bars indicate confidence
-   - User can click products for details (future enhancement)
+```mermaid
+flowchart TD
+    A[User navigates to<br/>web application] --> B[TensorFlow.js runtime<br/>initializes]
+    B --> C[MobileNet v2 model<br/>loads from CDN]
+    C --> D[Product catalog<br/>loads into memory]
+    D --> E[User drags/drops<br/>product image]
+    E --> F[Image preview displays<br/>with loading indicator]
+    F --> G[Client-side validation<br/>file type, size]
+    G --> H[Image preprocessed to<br/>224×224 RGB tensor]
+    H --> I[MobileNet v2 inference<br/>extracts 1024-dim vector]
+    I --> J[Vector normalized<br/>using L2 norm]
+    J --> K[Query embedding compared<br/>against catalog]
+    K --> L[Cosine similarity<br/>computed for each product]
+    L --> M[Results sorted by<br/>similarity score]
+    M --> N[Top 10 products<br/>selected]
+    N --> O[Product cards render<br/>in responsive grid]
+    O --> P[Display: image, name,<br/>category, similarity %]
+    
+    style A fill:#3498db,stroke:#2980b9,stroke-width:2px,color:#fff
+    style E fill:#9b59b6,stroke:#8e44ad,stroke-width:2px,color:#fff
+    style I fill:#e67e22,stroke:#d35400,stroke-width:2px,color:#fff
+    style L fill:#e74c3c,stroke:#c0392b,stroke-width:2px,color:#fff
+    style O fill:#27ae60,stroke:#229954,stroke-width:2px,color:#fff
+```
 
 ### Technical Data Flow
-```
-Image File (JPEG/PNG)
-  ↓
-HTML5 Canvas Preprocessing
-  ↓
-Tensor [1, 224, 224, 3]
-  ↓
-MobileNet v2 Inference
-  ↓
-Raw Embedding [1, 1024]
-  ↓
-L2 Normalization
-  ↓
-Normalized Embedding [1024]
-  ↓
-Cosine Similarity vs Catalog
-  ↓
-Similarity Scores [150-200]
-  ↓
-Top-K Ranking (K=10)
-  ↓
-Sorted Results Array
-  ↓
-React UI Rendering
+```mermaid
+flowchart TD
+    A[Image File<br/>JPEG/PNG] --> B[HTML5 Canvas<br/>Preprocessing]
+    B --> C[Tensor<br/>1, 224, 224, 3]
+    C --> D[MobileNet v2<br/>Inference]
+    D --> E[Raw Embedding<br/>1, 1024]
+    E --> F[L2 Normalization]
+    F --> G[Normalized Embedding<br/>1024]
+    G --> H[Cosine Similarity<br/>vs Catalog]
+    H --> I[Similarity Scores<br/>150-200 products]
+    I --> J[Top-K Ranking<br/>K=10]
+    J --> K[Sorted Results<br/>Array]
+    K --> L[React UI<br/>Rendering]
+    
+    style A fill:#e63946,stroke:#d62828,stroke-width:2px,color:#fff
+    style D fill:#f77f00,stroke:#d62828,stroke-width:2px,color:#fff
+    style F fill:#06aed5,stroke:#0096c7,stroke-width:2px,color:#fff
+    style H fill:#06aed5,stroke:#0096c7,stroke-width:2px,color:#fff
+    style J fill:#06aed5,stroke:#0096c7,stroke-width:2px,color:#fff
+    style L fill:#2a9d8f,stroke:#264653,stroke-width:2px,color:#fff
 ```
 
 ---
