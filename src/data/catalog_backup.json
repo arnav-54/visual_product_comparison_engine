@@ -1,0 +1,18 @@
+{
+  "products": [
+    {
+      "id": "shoe_001",
+      "name": "Test Sneaker Alpha",
+      "category": "Sneakers",
+      "image": "/assets/shoes/sneakers/shoe1.jpg",
+      "embedding": []
+    },
+    {
+      "id": "shoe_002",
+      "name": "Test Runner Pro",
+      "category": "Running",
+      "image": "/assets/shoes/running/shoe2.jpg",
+      "embedding": []
+    }
+  ]
+}

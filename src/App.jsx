@@ -1,11 +1,10 @@
-import { useState } from 'react'
 import './App.css'
-import AIModuleTest from './AIModuleTest'
+import AutoCatalogGenerator from './AutoCatalogGenerator'
 
 function App() {
   return (
     <>
-      <AIModuleTest />
+      <AutoCatalogGenerator />
     </>
   )
 }
