@@ -3,6 +3,14 @@ import { extractEmbedding } from './ai';
 import { search } from './search';
 import './App.css';
 
+// Import all shoe images
+const shoeImages = import.meta.glob('./assets/shoes/*.{jpg,jpeg,png,webp,avif}', { eager: true, as: 'url' });
+const imageMap = {};
+Object.entries(shoeImages).forEach(([path, url]) => {
+  const filename = path.split('/').pop();
+  imageMap[filename] = url;
+});
+
 function App() {
   const [uploadedImage, setUploadedImage] = useState(null);
   const [results, setResults] = useState([]);
@@ -31,9 +39,16 @@ function App() {
 
           console.log('🔍 Searching for similar products...');
           const searchResults = search(embedding, 10);
-          console.log('✅ Found', searchResults.length, 'results');
+          
+          // Map image paths to actual URLs
+          const resultsWithImages = searchResults.map(result => ({
+            ...result,
+            image: imageMap[result.image.split('/').pop()] || result.image
+          }));
+          
+          console.log('✅ Found', resultsWithImages.length, 'results');
 
-          setResults(searchResults);
+          setResults(resultsWithImages);
           setLoading(false);
           URL.revokeObjectURL(imageUrl);
         } catch (err) {
